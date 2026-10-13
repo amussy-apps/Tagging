@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>Аудио</title>
+<style>
+:root{color-scheme:dark}
+body{max-width:760px;margin:24px auto;padding:0 16px;font-family:system-ui,sans-serif;background:#171717;color:#e5e5e5}
+section{margin:24px 0;padding:12px 0;border-top:1px solid #383838}
+label.field{display:block;margin:10px 0}
+label.field input{display:block;box-sizing:border-box;width:100%;max-width:420px;margin-top:4px}
+.cover-wrap{display:grid;grid-template-columns:130px 1fr;gap:16px;align-items:start}
+.cover-pick{display:block;margin:8px 0}.cover-pick input{display:block;max-width:100%}
+#coverPreview{width:100px;height:100px;object-fit:contain}#coverText{display:block;margin:6px 0}
+.track-row{display:grid;grid-template-columns:28px 92px minmax(100px,1fr) 32px;gap:8px;align-items:center;margin:8px 0}
+.track-row input{box-sizing:border-box;width:100%;min-width:0}.track-row span{font-size:.85em;color:#aaa}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+textarea{box-sizing:border-box;width:100%;max-width:500px;min-height:100px;display:block;margin:8px 0}
+audio{display:block;width:100%;margin:12px 0}#fileInfo,#status{margin:8px 0}.result{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid #383838}.result strong{font-weight:400;overflow-wrap:anywhere}
+@media(max-width:520px){body{margin:16px auto}.cover-wrap{grid-template-columns:100px 1fr;gap:12px}.track-row{grid-template-columns:22px 76px minmax(70px,1fr) 28px;gap:5px}}
+</style>
+
+<style>
+*{box-sizing:border-box}html{width:100%;overflow-x:hidden;overscroll-behavior-x:none}body{width:100%;max-width:760px;overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-y;margin:0 auto;padding:22px 18px 60px;background:#161616;color:#ddd;font-size:14px;line-height:1.45}main{min-width:0;width:100%}h1{font-size:22px;font-weight:550;letter-spacing:-.6px;margin:0 0 24px}h2{font-size:14px;font-weight:600;margin:0 0 14px}section{margin:0;padding:19px 0 22px;border-top:1px solid #343434}button,input,textarea{font:inherit}button{background:#252525;color:#ddd;border:1px solid #454545;border-radius:3px;padding:8px 11px;cursor:pointer}button:active{background:#3b3b3b}button:disabled{opacity:.35;cursor:default}input:not([type=file]):not([type=range]),textarea{background:#202020;color:#eee;border:1px solid #454545;border-radius:2px;padding:8px;outline:none}input:focus,textarea:focus{border-color:#929292!important}input[type=file]{max-width:100%;font-size:12px}label.field input{max-width:none}.cover-wrap{grid-template-columns:112px minmax(0,1fr);gap:18px}.cover-frame{width:92px;height:92px;background:#202020;border:1px solid #414141;display:flex;align-items:center;justify-content:center;color:#555;margin:8px 0}.cover-frame img{width:100%!important;height:100%!important;object-fit:cover!important}.cover-frame [hidden]{display:none}.cover-pick{margin:0 0 5px}.cover-pick input{font-size:11px}.cover-wrap>div{min-width:0}.track-row{grid-template-columns:25px 95px minmax(0,1fr) 30px}.track-row button{padding:6px 0}.custom-player{margin:16px 0 8px;padding:14px 12px 10px;border:1px solid #383838;background:#1b1b1b;min-width:0}.custom-player[hidden]{display:none}.player-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.play-btn{display:flex;align-items:center;justify-content:center;width:38px;height:38px;flex-shrink:0;padding:0;background:#dedede;color:#171717;border:0}.time-display{font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;flex:1}.time-sep{color:#777}.fine-btn{font-size:12px;padding:7px;min-width:44px;font-variant-numeric:tabular-nums}.wave-container{position:relative;height:76px;width:100%;overflow:hidden;background:#202020;cursor:crosshair;touch-action:none}.wave-container canvas{width:100%;height:100%;display:block}.wave-container #playhead{position:absolute;top:0;bottom:0;left:0;width:1px;background:#eee;pointer-events:none}#seek{width:100%;height:20px;margin:7px 0 0;accent-color:#c8c8c8;cursor:pointer;touch-action:none}.split-btn{display:inline-flex;gap:8px;align-items:center;background:#303030}.result{min-width:0}.result>div{min-width:0}#status{overflow-wrap:anywhere}.cover-pick input{width:100%}@media(max-width:520px){body{margin:0 auto;padding:17px 14px 50px}.cover-wrap{grid-template-columns:100px minmax(0,1fr);gap:12px}.cover-frame{width:82px;height:82px}.track-row{grid-template-columns:20px 80px minmax(0,1fr) 27px;gap:5px}.player-head{gap:7px}.time-display{font-size:11px}.fine-btn{min-width:38px;padding:7px 4px;font-size:11px}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Аудио</h1></header>
+<section>
+<h2>Файл</h2>
+<label for="audioFile">Выбрать аудиофайл</label>
+<input id="audioFile" type="file" accept=".m4a,.mp3,audio/mp4,audio/mpeg">
+<span id="fileLabel"></span>
+<div id="fileInfo"></div>
+<audio id="player" preload="metadata" hidden></audio>
+<div id="customPlayer" class="custom-player" hidden>
+  <div class="player-head"><button id="playPause" class="play-btn" type="button" aria-label="Воспроизвести"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path id="playShape" d="M7 4v16l13-8z"/></svg></button><div class="time-display"><span id="currentTime">00:00.00</span><span class="time-sep"> / </span><span id="totalTime">00:00.00</span></div><button id="backFine" class="fine-btn" type="button">−0.1</button><button id="forwardFine" class="fine-btn" type="button">+0.1</button></div>
+  <div id="waveContainer" class="wave-container" aria-label="Волновая форма, перемотка"><canvas id="waveCanvas"></canvas><div id="playhead"></div></div>
+  <input id="seek" type="range" min="0" max="1000" step="0.01" value="0" aria-label="Точная перемотка">
+</div>
+<p><button id="addHere" class="split-btn" type="button"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.2 8.2 20 20M14 10l6-6M8.2 15.8 11 13"/></svg>Разрезать здесь</button></p>
+<p><button id="preset" type="button" hidden>Амано: 10 частей</button></p>
+</section>
+<section>
+<h2>Теги и обложка</h2>
+<div class="cover-wrap">
+<div>
+<label class="cover-pick" for="coverFile">Обложка</label>
+<input id="coverFile" type="file" accept="image/*" aria-label="Выбрать обложку">
+<span id="coverText" hidden>Обложки нет</span>
+<div class="cover-frame"><img id="coverPreview" alt="Обложка" hidden><svg id="coverEmpty" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><rect x="3" y="3" width="18" height="18"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></svg></div>
+<button id="removeCover" type="button" hidden>Убрать обложку</button>
+</div>
+<div>
+<label class="field">Исполнитель<input id="artist" placeholder="Исполнитель" autocomplete="off"></label>
+<label class="field">Альбом<input id="album" placeholder="Альбом" autocomplete="off"></label>
+<label class="field">Год<input id="year" placeholder="1995" inputmode="numeric" maxlength="4"></label>
+</div>
+</div>
+<label class="field">Название трека<input id="title" placeholder="Название" autocomplete="off"></label>
+<details id="splitDetails">
+<summary>Части</summary>
+<div id="tracks"></div>
+<div class="actions">
+<button id="addTrack" type="button">Добавить часть</button>
+</div>
+<details>
+<summary>Список таймкодов</summary>
+<textarea id="chapters" placeholder="00:00 Прелюдия&#10;04:31 Следующая часть&#10;10:31 Финал"></textarea>
+<button id="applyChapters" type="button">Применить</button>
+</details>
+<p id="mp3Notice" hidden>MP3 нарезается по кадрам.</p>
+</details>
+</section>
+<section>
+<h2>Сохранить</h2>
+<button id="save" type="button" disabled>Подготовить файл</button>
+<div id="status" role="status" aria-live="polite"></div>
+<div id="results" hidden>
+<button id="zipBtn" type="button" hidden>Скачать все части ZIP</button>
+<div id="links"></div>
+</div>
+</section>
+</main>
+<script>/* Self-contained MP3 / unfragmented AAC-in-M4A editing. No transcoding. */
+'use strict';
+const AudioFiles=(()=>{
+ const enc=new TextEncoder(),te=s=>enc.encode(s),view=a=>new DataView(a.buffer,a.byteOffset,a.byteLength);
+ const cat=(...arrays)=>{let n=arrays.reduce((s,a)=>s+a.length,0),o=new Uint8Array(n),p=0;for(let a of arrays){o.set(a,p);p+=a.length}return o};
+ const u32=n=>{let a=new Uint8Array(4);view(a).setUint32(0,n);return a};
+ const box=(name,...parts)=>{let d=cat(...parts);if(d.length>0xfffffff0)throw Error('Файл слишком большой.');return cat(u32(d.length+8),Uint8Array.from(name,c=>c.charCodeAt(0)),d)};
+ const full=(name,...parts)=>box(name,new Uint8Array(4),...parts);
+ const str=(a,p,n)=>String.fromCharCode(...a.subarray(p,p+n));
+ const num=(a,p)=>view(a).getUint32(p);
+ function boxes(a,start=0,end=a.length){let out=[];for(let p=start;p+8<=end;){let size=num(a,p),h=8,type=str(a,p+4,4);if(size===1){if(p+16>end)throw Error('Повреждённый M4A.');size=Number(view(a).getBigUint64(p+8));h=16}if(size===0)size=end-p;if(size<h||p+size>end)throw Error('Повреждённая структура M4A.');out.push({type,start:p,end:p+size,payload:p+h,raw:a.subarray(p,p+size)});p+=size}return out}
+ function get(a,parent,name){let b=boxes(a,parent.payload,parent.end).find(b=>b.type===name);if(!b)throw Error('В этом M4A не найден '+name+'.');return b}
+ function durationBox(raw,kind,duration){let b=raw.slice(),v=b[8],p=kind==='tkhd'?(v===1?36:28):(v===1?32:24);if(v===1)view(b).setBigUint64(p,BigInt(Math.round(duration)));else view(b).setUint32(p,Math.round(duration));return b}
+ const data=(type,bytes)=>box('data',u32(type),u32(0),bytes);
+ const tag=(key,text)=>box(key,data(1,te(text)));
+ function metadata(tags,cover){let list=[tag('\xa9nam',tags.title),tag('\xa9ART',tags.artist),tag('aART',tags.artist),tag('\xa9alb',tags.album)];if(tags.year)list.push(tag('\xa9day',tags.year));let tr=new Uint8Array(8);view(tr).setUint16(2,tags.track);view(tr).setUint16(4,tags.total);list.push(box('trkn',data(0,tr)));if(cover)list.push(box('covr',data(13,cover)));let handler=full('hdlr',u32(0),te('mdir'),te('appl'),new Uint8Array(8),new Uint8Array(1));return box('udta',full('meta',handler,box('ilst',...list)))}
+ // Atom types are four bytes, including copyright-prefixed iTunes keys.
+ function m4a(a){let top=boxes(a),moov=top.find(x=>x.type==='moov');if(!moov||top.some(x=>x.type==='moof'))throw Error('Нужен обычный M4A/AAC. Потоковый или фрагментированный MP4 не поддерживается.');let mvhd=get(a,moov,'mvhd'),tracks=boxes(a,moov.payload,moov.end).filter(x=>x.type==='trak');let chosen;
+  for(let tr of tracks){let mdia=get(a,tr,'mdia'),hdlr=get(a,mdia,'hdlr');if(str(a,hdlr.payload+8,4)==='soun'){chosen={tr,mdia,hdlr};break}}
+  if(!chosen)throw Error('В M4A нет аудио.');let {tr,mdia,hdlr}=chosen,mdhd=get(a,mdia,'mdhd'),tkhd=get(a,tr,'tkhd'),minf=get(a,mdia,'minf'),stbl=get(a,minf,'stbl'),stsd=get(a,stbl,'stsd');if(str(a,stsd.payload+12,4)!=='mp4a')throw Error('Поддерживается M4A с кодеком AAC.');let tables=boxes(a,stbl.payload,stbl.end);if(tables.some(x=>x.type==='ctts'))throw Error('Этот M4A содержит необычную таблицу времени.');let stsz=get(a,stbl,'stsz'),stsc=get(a,stbl,'stsc'),stts=get(a,stbl,'stts'),co=tables.find(x=>x.type==='stco'||x.type==='co64');if(!co)throw Error('Не найдены аудиоданные.');let count=num(a,stsz.payload+8),common=num(a,stsz.payload+4),sizes=new Uint32Array(count),offsets=new Float64Array(count),times=new Float64Array(count+1),deltas=new Uint32Array(count);for(let i=0;i<count;i++)sizes[i]=common||num(a,stsz.payload+12+i*4);
+  let entries=[],scCount=num(a,stsc.payload+4);for(let i=0;i<scCount;i++){let p=stsc.payload+8+i*12;entries.push([num(a,p),num(a,p+4),num(a,p+8)])}let chunks=num(a,co.payload+4),sample=0,entry=0;for(let c=1;c<=chunks;c++){while(entry+1<entries.length&&entries[entry+1][0]<=c)entry++;if(entries[entry][2]!==1)throw Error('Необычная структура AAC.');let p=co.payload+8+(c-1)*(co.type==='co64'?8:4),o=co.type==='co64'?Number(view(a).getBigUint64(p)):num(a,p);for(let k=0;k<entries[entry][1];k++){if(sample>=count||o+sizes[sample]>a.length)throw Error('Повреждённые аудиоданные.');offsets[sample]=o;o+=sizes[sample++];}}if(sample!==count)throw Error('Неполные аудиоданные.');let idx=0,tt=num(a,stts.payload+4);for(let i=0;i<tt;i++){let p=stts.payload+8+i*8,n=num(a,p),d=num(a,p+4);for(let j=0;j<n;j++){if(idx>=count)throw Error('Неверная длительность M4A.');deltas[idx]=d;times[idx+1]=times[idx]+d;idx++}}if(idx!==count)throw Error('Неполная таблица времени.');let scale=num(a,mdhd.payload+(a[mdhd.payload]===1?20:12)),movieScale=num(a,mvhd.payload+(a[mvhd.payload]===1?20:12));let ftyp=box('ftyp',te('M4A '),u32(0x200),te('M4A '),te('isom'),te('mp42'));
+  const boundary=t=>{let target=t*scale,lo=0,hi=count;while(lo<hi){let m=(lo+hi)>>>1;if(times[m]<target)lo=m+1;else hi=m}return lo>0&&Math.abs(times[lo-1]-target)<Math.abs(times[lo]-target)?lo-1:lo};
+  return {ext:'m4a',duration:times[count]/scale,make(start,end,tags,cover){let first=boundary(start),last=boundary(end);if(last<=first)throw Error('Часть слишком короткая.');let n=last-first,totalTime=times[last]-times[first],size=0,parts=[];for(let i=first;i<last;i++){size+=sizes[i];parts.push(a.subarray(offsets[i],offsets[i]+sizes[i]))}let runs=[];for(let i=first;i<last;i++){let r=runs[runs.length-1];if(r&&r[1]===deltas[i])r[0]++;else runs.push([1,deltas[i]])}let sz=new Uint8Array(n*4);for(let i=0;i<n;i++)view(sz).setUint32(i*4,sizes[first+i]);let table=box('stbl',stsd.raw,full('stts',u32(runs.length),...runs.flatMap(r=>r.map(u32))),full('stsc',u32(1),u32(1),u32(n),u32(1)),full('stsz',u32(0),u32(n),sz),full('stco',u32(1),u32(ftyp.length+8)));
+   let newMdia=box('mdia',durationBox(mdhd.raw,'mdhd',totalTime),hdlr.raw,box('minf',get(a,minf,'smhd').raw,get(a,minf,'dinf').raw,table));let movieDuration=Math.round(totalTime/scale*movieScale),newTr=box('trak',durationBox(tkhd.raw,'tkhd',movieDuration),newMdia);let newMoov=box('moov',durationBox(mvhd.raw,'mvhd',movieDuration),newTr,metadata(tags,cover));return new Blob([ftyp,u32(size+8),te('mdat'),...parts,newMoov],{type:'audio/mp4'})}};
+ }
+ function utf16(s){let b=new Uint8Array(3+s.length*2);b.set([1,255,254]);for(let i=0;i<s.length;i++)view(b).setUint16(3+i*2,s.charCodeAt(i),true);return b}
+ const sync=n=>new Uint8Array([(n>>>21)&127,(n>>>14)&127,(n>>>7)&127,n&127]);
+ function id3(tags,cover){let frame=(key,bytes)=>cat(te(key),u32(bytes.length),new Uint8Array(2),bytes),parts=[frame('TIT2',utf16(tags.title)),frame('TPE1',utf16(tags.artist)),frame('TALB',utf16(tags.album)),frame('TRCK',utf16(tags.track+'/'+tags.total))];if(tags.year)parts.push(frame('TYER',utf16(tags.year)));if(cover)parts.push(frame('APIC',cat(new Uint8Array([0]),te('image/jpeg'),new Uint8Array([0,3,0]),cover)));let body=cat(...parts);return cat(te('ID3'),new Uint8Array([3,0,0]),sync(body.length),body)}
+ function mp3(a){let pos=0;if(str(a,0,3)==='ID3'){pos=10+((a[6]&127)*2097152+(a[7]&127)*16384+(a[8]&127)*128+(a[9]&127));if(a[5]&16)pos+=10}let frames=[],time=0;let bitrate1=[0,32,40,48,56,64,80,96,112,128,160,192,224,256,320],bitrate2=[0,8,16,24,32,40,48,56,64,80,96,112,128,144,160];let started=false;
+  while(pos+4<a.length){let x=a[pos],y=a[pos+1],z=a[pos+2],v=(y>>3)&3,layer=(y>>1)&3,bi=z>>4,si=(z>>2)&3;if(x!==255||(y&224)!==224||v===1||layer!==1||bi===0||bi===15||si===3){if(started)break;pos++;continue}let rate=[44100,48000,32000][si]/(v===3?1:v===2?2:4),bps=(v===3?bitrate1:bitrate2)[bi]*1000,len=Math.floor((v===3?144:72)*bps/rate)+((z>>1)&1),dt=(v===3?1152:576)/rate;if(pos+len>a.length)break;let chunk=a.subarray(pos,pos+len),text=str(chunk,0,Math.min(len,100));if(!started&&(text.includes('Xing')||text.includes('Info'))){pos+=len;started=true;continue}frames.push({pos,len,time,dt});time+=dt;pos+=len;started=true}
+  if(!frames.length)throw Error('Не удалось прочитать MP3. Поддерживаются обычные MP3 MPEG Layer III.');return {ext:'mp3',duration:time,make(start,end,tags,cover){let first=frames.findIndex(f=>f.time>=start-0.015),last=frames.findIndex(f=>f.time>=end-0.015);if(first<0)throw Error('Начало части за пределами аудио.');if(last<0)last=frames.length;if(last<=first)throw Error('Часть слишком короткая.');return new Blob([id3(tags,cover),...frames.slice(first,last).map(f=>a.subarray(f.pos,f.pos+f.len))],{type:'audio/mpeg'})}};
+ }
+ function open(buffer){let a=new Uint8Array(buffer);return str(a,4,4)==='ftyp'?m4a(a):mp3(a)}
+ let crcTable=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let j=0;j<8;j++)c=c&1?0xedb88320^(c>>>1):c>>>1;crcTable[n]=c>>>0}function crc(a){let c=0xffffffff;for(let b of a)c=crcTable[(c^b)&255]^(c>>>8);return (c^0xffffffff)>>>0}
+ async function zip(items){let local=[],central=[],offset=0;for(let {name,blob} of items){let a=new Uint8Array(await blob.arrayBuffer()),filename=te(name),c=crc(a),h=new Uint8Array(30),d=view(h);d.setUint32(0,0x04034b50,true);d.setUint16(4,20,true);d.setUint16(6,0x800,true);d.setUint16(12,33,true);d.setUint32(14,c,true);d.setUint32(18,a.length,true);d.setUint32(22,a.length,true);d.setUint16(26,filename.length,true);local.push(h,filename,a);let ch=new Uint8Array(46),v=view(ch);v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);v.setUint16(8,0x800,true);v.setUint16(14,33,true);v.setUint32(16,c,true);v.setUint32(20,a.length,true);v.setUint32(24,a.length,true);v.setUint16(28,filename.length,true);v.setUint32(42,offset,true);central.push(ch,filename);offset+=30+filename.length+a.length}let cs=central.reduce((s,a)=>s+a.length,0),end=new Uint8Array(22),v=view(end);v.setUint32(0,0x06054b50,true);v.setUint16(8,items.length,true);v.setUint16(10,items.length,true);v.setUint32(12,cs,true);v.setUint32(16,offset,true);return new Blob([...local,...central,end],{type:'application/zip'})}
+ return {open,zip};
+})();
+if(typeof module!=='undefined')module.exports=AudioFiles;
+</script><script>
+
+'use strict';
+const $=id=>document.getElementById(id);let source=null,cover=null,parts=[{start:'00:00',title:''}],urls=[],inputUrl=null,outputs=[],generation=0,busy=false,loadId=0,coverId=0;
+const fmt=s=>{s=Math.floor(s);let h=Math.floor(s/3600),m=Math.floor(s/60)%60,sec=s%60;return (h?h+':':'')+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')};
+function normalizeTime(s){return String(s??'').normalize('NFKC').trim().replace(/[：﹕∶]/g,':').replace(/，/g,',').replace(/．/g,'.').replace(/\s+/g,'')}
+function parse(s){let text=normalizeTime(s);if(!/^\d+(?::[0-5]?\d){0,2}(?:[.,]\d+)?$/.test(text))throw Error('Время должно быть в формате 04:31 или 1:04:31.');let t=text.replace(',','.').split(':').map(Number);return t.reduce((a,b)=>a*60+b,0)}
+function status(s,error=false){$('status').textContent=s;$('status').classList.toggle('error',error)}
+function clearResults(){generation++;outputs=[];urls.forEach(URL.revokeObjectURL);urls=[];$('results').hidden=true;$('links').replaceChildren();$('zipLink')?.remove();if(!busy)status('')}
+function render(){if(parts.length)parts[0].start='00:00';let rows=[];parts.forEach((part,i)=>{let row=document.createElement('div');row.className='track-row';let n=document.createElement('span');n.textContent=String(i+1).padStart(2,'0');let time=document.createElement('input');time.value=part.start;time.placeholder=i===0?'00:00':'01:00';time.readOnly=i===0;time.autocomplete='off';time.spellcheck=false;if(i===0)time.title='Первая часть всегда начинается с нуля';time.setAttribute('aria-label','Начало части '+(i+1));time.oninput=()=>{part.start=i===0?'00:00':time.value;if(i===0)time.value='00:00';clearResults()};let title=document.createElement('input');title.value=part.title;title.placeholder='Название части';title.setAttribute('aria-label','Название части '+(i+1));title.oninput=()=>{part.title=title.value;clearResults()};let del=document.createElement('button');del.textContent='×';del.title='Удалить часть';del.setAttribute('aria-label','Удалить часть '+(i+1));del.disabled=parts.length===1;del.onclick=()=>{parts.splice(i,1);clearResults();render()};row.append(n,time,title,del);rows.push(row)});$('tracks').replaceChildren(...rows);$('save').textContent=parts.length>1?'Подготовить части ('+parts.length+')':'Подготовить файл';$('title').disabled=parts.length>1;$('mp3Notice').hidden=!(source?.ext==='mp3'&&parts.length>1)}
+for(let id of ['artist','album','year','title'])$(id).oninput=clearResults;
+$('audioFile').onchange=async()=>{let file=$('audioFile').files[0];if(!file)return;let id=++loadId;clearResults();source=null;$('save').disabled=true;$('preset').hidden=true;status('Читаю аудио…');try{let data=await file.arrayBuffer();if(id!==loadId)return;source=AudioFiles.open(data);$('fileLabel').textContent=file.name;$('fileInfo').textContent=fmt(source.duration)+' · '+source.ext.toUpperCase();if(inputUrl)URL.revokeObjectURL(inputUrl);inputUrl=URL.createObjectURL(file);$('player').src=inputUrl;$('customPlayer').hidden=false;$('player').hidden=true;initializePlayer(file,source.duration);let title=file.name.replace(/\.[^.]+$/,'').replaceAll('_',' ');$('title').value=title;parts=[{start:'00:00',title}];$('preset').hidden=!( /am ano|amano|天野|fam.*ihrlie/i.test(file.name)&&Math.abs(source.duration-3250.56)<3);$('save').disabled=false;render();status('Аудио готово. Добавь теги и обложку.')}catch(e){if(id===loadId){status(e.message,true);$('fileInfo').textContent='';$('customPlayer').hidden=true;$('fileLabel').textContent='Выбрать другой аудиофайл'}}};
+$('coverFile').onchange=async()=>{let file=$('coverFile').files[0];if(!file)return;let id=++coverId;clearResults();status('Готовлю обложку…');let u=URL.createObjectURL(file);try{let img=new Image();img.src=u;await img.decode();let factor=Math.min(1,1200/Math.max(img.width,img.height)),canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(img.width*factor));canvas.height=Math.max(1,Math.round(img.height*factor));let ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);let blob=await new Promise(r=>canvas.toBlob(r,'image/jpeg',.9));if(!blob)throw Error('Не удалось обработать картинку.');let bytes=new Uint8Array(await blob.arrayBuffer());if(id!==coverId)return;cover=bytes;$('coverPreview').src=canvas.toDataURL('image/jpeg',.8);$('coverPreview').hidden=false;$('coverEmpty').hidden=true;$('coverText').hidden=true;$('removeCover').hidden=false;status('Обложка добавлена.')}catch(e){if(id===coverId)status('Не удалось открыть картинку. Выбери JPG или PNG.',true)}finally{URL.revokeObjectURL(u)}};
+$('removeCover').onclick=()=>{coverId++;cover=null;$('coverFile').value='';$('coverPreview').hidden=true;$('coverEmpty').hidden=false;$('coverPreview').removeAttribute('src');$('coverText').hidden=false;$('removeCover').hidden=true;clearResults()};
+$('addTrack').onclick=()=>{parts.push({start:'',title:''});clearResults();render()};
+$('addHere').onclick=()=>{if(!source)return status('Сначала выбери аудио.',true);let t=$('player').currentTime;if(t<1)return status('Перемести проигрыватель на начало новой части.',true);parts.push({start:fmtPrecise(t),title:''});parts.sort((a,b)=>{let x=Infinity,y=Infinity;try{x=parse(a.start)}catch(e){}try{y=parse(b.start)}catch(e){}return x-y});clearResults();render()};
+$('applyChapters').onclick=()=>{try{let lines=$('chapters').value.trim().split(/\n+/),list=lines.map(line=>{let m=line.trim().match(/^(\d+(?::\d{1,2}){1,2}(?:[.,]\d+)?)\s+(.+)$/);if(!m)throw Error('Каждая строка: 00:00 Название части.');parse(m[1]);return{start:m[1],title:m[2]}});if(list.length>100)throw Error('Максимум 100 частей.');if(parse(list[0].start)!==0)throw Error('Список должен начинаться с 00:00.');parts=list;clearResults();render();status('Список применён.')}catch(e){status(e.message,true)}};
+$('preset').onclick=()=>{let starts=[0,271.3875,631.38,1053.565,1385.02,1665.5,1986.7,2195.275,2510.05,2896.145],names=['Prélude','Joie et espoir','Les secrets de l’ancien royaume','Thème du voyage','Fuite et poursuite','Les compagnons','L’énigme de la ville souterraine','La preuve de la maison royale','Le démon','Bataille et épilogue'];parts=names.map((title,i)=>({title,start:fmt(starts[i])+'.'+String(Math.round((starts[i]%1)*1000)).padStart(3,'0')}));$('artist').value='Masamichi Amano';$('album').value='Ruin Explorer Fam & Ihrlie — Suite Symphonique 1';$('year').value='1995';$('splitDetails').open=true;clearResults();render();status('10 частей выставлены. Добавь обложку.');};
+function clean(s){return s.replace(/[\\/:*?"<>|\x00-\x1f]/g,' ').trim().slice(0,110)||'Аудио'}
+$('save').onclick=async()=>{if(!source||busy)return;try{let year=$('year').value.trim();if(year&&!/^\d{4}$/.test(year))throw Error('Год — четыре цифры.');if(parts.length>100)throw Error('Максимум 100 частей.');let chapters=parts.map((p,i)=>{let start=0;if(i>0){if(!normalizeTime(p.start))throw Error('Часть '+(i+1)+': укажи время начала, например 01:00.');try{start=parse(p.start)}catch(e){throw Error('Часть '+(i+1)+': время должно быть в формате 01:00 или 1:04:31.')}}return{start,title:(parts.length===1?$('title').value:p.title).trim()||'Часть '+(i+1)}});if(chapters[0].start!==0)throw Error('Первая часть должна начинаться с 00:00.');for(let i=0;i<chapters.length;i++){if(chapters[i].start>=source.duration)throw Error('Часть '+(i+1)+' начинается после конца аудио.');if(i&&chapters[i].start<=chapters[i-1].start)throw Error('Начала частей должны идти по возрастанию.');}clearResults();let myGeneration=generation,src=source,pic=cover,common={artist:$('artist').value.trim(),album:$('album').value.trim(),year};busy=true;$('save').disabled=true;let prepared=[];for(let i=0;i<chapters.length;i++){status('Готовлю '+(i+1)+' из '+chapters.length+'…');await new Promise(r=>setTimeout(r,0));if(generation!==myGeneration)throw Error('Данные изменились. Нажми «Подготовить» ещё раз.');let chapter=chapters[i],tags={...common,title:chapter.title,track:i+1,total:chapters.length},blob=src.make(chapter.start,chapters[i+1]?.start??src.duration,tags,pic),name=(chapters.length>1?String(i+1).padStart(2,'0')+' - ':'')+clean(chapter.title)+'.'+src.ext;prepared.push({blob,name})}outputs=prepared;for(let item of outputs){let u=URL.createObjectURL(item.blob);urls.push(u);let row=document.createElement('div');row.className='result';let description=document.createElement('div'),title=document.createElement('strong');title.textContent=item.name;description.append(title);let a=document.createElement('a');a.href=u;a.download=item.name;a.textContent='Скачать';row.append(description,a);$('links').append(row)}$('results').hidden=false;$('zipBtn').hidden=outputs.length===1;status('Готово. '+(pic?'Обложка встроена.':'Без обложки.'))}catch(e){status(e.message,true)}finally{busy=false;$('save').disabled=!source}};
+$('zipBtn').onclick=async()=>{let button=$('zipBtn');button.disabled=true;let items=outputs.slice(),g=generation;try{status('Собираю ZIP…');let blob=await AudioFiles.zip(items);if(g!==generation)throw Error('Данные изменились. Подготовь файлы заново.');let u=URL.createObjectURL(blob);urls.push(u);let a=document.createElement('a');a.id='zipLink';a.href=u;a.download=clean($('album').value||'Аудио')+'.zip';a.textContent='Скачать готовый ZIP';button.hidden=true;button.after(a);status('ZIP готов. Нажми «Скачать готовый ZIP».')}catch(e){status(e.message,true)}finally{button.disabled=false}};
+render();
+
+</script>
+
+<script>
+'use strict';
+const fmtPrecise=s=>{let cent=Math.round(Math.max(0,s)*100),hours=Math.floor(cent/360000),mins=Math.floor(cent/6000)%60,secs=Math.floor(cent/100)%60;return (hours?hours+':':'')+String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0')+'.'+String(cent%100).padStart(2,'0')};
+let waveData=null,waveTask=0;
+const audioEl=document.getElementById('player'),seekEl=document.getElementById('seek'),waveBox=document.getElementById('waveContainer'),waveCanvas=document.getElementById('waveCanvas');
+function syncPlayer(){const duration=Number.isFinite(audioEl.duration)?audioEl.duration:(source?.duration||0),time=audioEl.currentTime||0;document.getElementById('currentTime').textContent=fmtPrecise(time);document.getElementById('totalTime').textContent=fmtPrecise(duration);seekEl.value=duration?time/duration*1000:0;document.getElementById('playhead').style.left=(duration?time/duration*100:0)+'%';document.getElementById('playShape').setAttribute('d',audioEl.paused?'M7 4v16l13-8z':'M6 4h4v16H6z M14 4h4v16h-4z')}
+function jumpTo(time){audioEl.currentTime=Math.max(0,Math.min(audioEl.duration||source?.duration||0,time));syncPlayer()}
+document.getElementById('playPause').onclick=()=>audioEl.paused?audioEl.play().catch(()=>{}):audioEl.pause();
+document.getElementById('backFine').onclick=()=>jumpTo(audioEl.currentTime-.1);
+document.getElementById('forwardFine').onclick=()=>jumpTo(audioEl.currentTime+.1);
+seekEl.oninput=()=>jumpTo(Number(seekEl.value)/1000*(audioEl.duration||source?.duration||0));
+let waveDragging=false;
+function waveSeek(e){let r=waveBox.getBoundingClientRect();jumpTo((Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)))*(audioEl.duration||source?.duration||0))}
+waveBox.addEventListener('pointerdown',e=>{waveDragging=true;waveBox.setPointerCapture(e.pointerId);waveSeek(e)});
+waveBox.addEventListener('pointermove',e=>{if(waveDragging)waveSeek(e)});
+waveBox.addEventListener('pointerup',()=>waveDragging=false);waveBox.addEventListener('pointercancel',()=>waveDragging=false);
+['timeupdate','loadedmetadata','durationchange','play','pause','seeked'].forEach(event=>audioEl.addEventListener(event,syncPlayer));
+function drawWave(){let width=Math.max(1,Math.round(waveBox.clientWidth*devicePixelRatio)),height=Math.round(76*devicePixelRatio);if(waveCanvas.width!==width||waveCanvas.height!==height){waveCanvas.width=width;waveCanvas.height=height}let ctx=waveCanvas.getContext('2d');ctx.clearRect(0,0,width,height);ctx.fillStyle='#777';let peaks=waveData;for(let x=0;x<width;x+=Math.max(1,Math.round(devicePixelRatio*2))){let i=Math.floor(x/width*(peaks?.length||1)),amp=peaks?peaks[i]:.13;let h=Math.max(1,amp*height*.88);ctx.fillRect(x,(height-h)/2,Math.max(1,devicePixelRatio),h)}}
+new ResizeObserver(drawWave).observe(waveBox);
+async function initializePlayer(file,duration){audioEl.pause();audioEl.currentTime=0;waveData=null;drawWave();syncPlayer();let id=++waveTask;try{let AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)return;let context=new AudioContextClass();let data=await file.arrayBuffer(),decoded=await context.decodeAudioData(data);await context.close();if(id!==waveTask)return;let channels=decoded.numberOfChannels,length=decoded.length,bins=900,peaks=new Float32Array(bins);for(let i=0;i<bins;i++){let from=Math.floor(i*length/bins),to=Math.min(length,Math.floor((i+1)*length/bins)),step=Math.max(1,Math.floor((to-from)/70)),max=0;for(let k=from;k<to;k+=step){let v=0;for(let c=0;c<channels;c++)v+=Math.abs(decoded.getChannelData(c)[k]);max=Math.max(max,v/channels)}peaks[i]=Math.max(.025,Math.min(1,max))}waveData=peaks;drawWave()}catch(e){/* Unsupported decoding or insufficient memory: seek bar still works. */}}
+</script>
+</body>
+</html>
